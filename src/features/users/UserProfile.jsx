@@ -13,12 +13,15 @@ import { ImSpinner8 } from "react-icons/im";
 import { MdDateRange } from "react-icons/md";
 import { RiMapPinLine } from "react-icons/ri";
 import { AiOutlineLink } from "react-icons/ai";
+import { CgSpinnerAlt } from "react-icons/cg";
 
 export const UserProfile = () => {
   const status = useSelector(state => state.user.userProfileStatus);
   const postStatus = useSelector(state => state.posts.userProfilePostsStatus);
   const userPosts = useSelector(state => state.posts.userPosts);
   const profile = useSelector(state => state.user.userProfile);
+  const followStatus = useSelector(state => state.user.followStatus);
+  const unfollowStatus = useSelector(state => state.user.unfollowStatus);
   const currentUser = useSelector(state => state.user.currentUser);
   const token = useSelector(state => state.auth.token);
   const [modal, setModal] = useState(false);
@@ -45,35 +48,39 @@ export const UserProfile = () => {
   };
 
   const handleConnectionAction = () => {
-    isUserInFollowingList()
-      ? dispatch(
-          unFollowUser({
-            profileUserId: profile._id,
-            currentUserId: currentUser._id,
-            token
-          })
-        )
-      : dispatch(
-          followUser({
-            profileUserId: profile._id,
-            currentUserId: currentUser._id,
-            token
-          })
-        );
+    if (isUserInFollowingList()) {
+      dispatch(
+        unFollowUser({
+          profileUserId: profile._id,
+          currentUserId: currentUser._id,
+          token
+        })
+      );
+    } else {
+      dispatch(
+        followUser({
+          profileUserId: profile._id,
+          currentUserId: currentUser._id,
+          token
+        })
+      );
+    }
   };
 
   if (status === API_STATUS.LOADING) {
-    return <ImSpinner8 className="animate-spin text-4xl mt-28 mx-auto" />;
+    return (
+      <ImSpinner8 className="animate-spin text-4xl mt-28 mx-auto text-primary" />
+    );
   }
   const createdAt = profile.createdAt;
   const date = new Date(createdAt).toDateString();
 
   return (
-    <div className="flex flex-col items-center w-full m-auto sm:w-3/4 lg:w-2/4 max-w-2xl">
+    <div className="flex flex-col items-center w-full m-auto sm:w-3/4 lg:w-2/4 max-w-2xl px-2">
       <EditProfileModal modal={modal} setModal={setModal} />
-      <div className="flex p-4 m-4 w-full shadow border rounded">
+      <div className="flex p-4 py-5 m-4 w-full shadow border rounded">
         <div>
-          <div className="rounded-full w-32 h-32 overflow-hidden border shadow">
+          <div className="rounded-full w-24 h-24 sm:w-32 sm:h-32 overflow-hidden border shadow">
             <img src={profile.photoUrl} alt="profile-pic" />
           </div>
         </div>
@@ -84,24 +91,28 @@ export const UserProfile = () => {
               <p className="text-2xl font-semibold">
                 {profile.firstName} {profile.lastName}
               </p>
-              <p className="text-lg">{profile.userName}</p>
+              <p className="text-base text-gray-600">@{profile.userName}</p>
             </div>
 
             {currentUser.userName === userName && (
               <button
                 onClick={() => setModal(true)}
-                className="px-2 py-0.5 text-primary text-xs font-semibold border border-primary rounded"
+                className="px-2 py-1 text-primary text-sm font-semibold border border-primary rounded transition-all hover:opacity-70"
               >
                 Edit Profile
               </button>
             )}
-            {currentUser.userName !== userName && (
-              <button
-                className="py-0.5 px-2 text-primary font-semibold bg-primary rounded-md"
-                onClick={handleConnectionAction}
-              >
-                {isUserInFollowingList() ? "Following" : "Follow"}
-              </button>
+            {followStatus === "loading" || unfollowStatus === "loading" ? (
+              <CgSpinnerAlt className="text-2xl animate-spin text-primary mr-5" />
+            ) : (
+              currentUser.userName !== userName && (
+                <button
+                  className="py-0.5 px-2 text-white font-semibold bg-primary rounded-md"
+                  onClick={handleConnectionAction}
+                >
+                  {isUserInFollowingList() ? "Following" : "Follow"}
+                </button>
+              )
             )}
           </div>
 
@@ -164,7 +175,7 @@ export const UserProfile = () => {
       </div>
 
       {postStatus === "succeeded" && (
-        <div>
+        <div className="w-full">
           <PostsList posts={userPosts} />
         </div>
       )}

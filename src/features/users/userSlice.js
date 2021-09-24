@@ -3,6 +3,16 @@ import axios from "axios";
 import { logoutButtonClicked } from "../auth/authSlice";
 import { API_URL } from "../../constants";
 
+export const fetchAllUsers = createAsyncThunk("users/allUsers", async token => {
+  const response = await axios.get(`${API_URL}/users/all`, {
+    headers: {
+      authorization: token
+    }
+  });
+
+  return response.data.users;
+});
+
 export const fetchUserProfile = createAsyncThunk(
   "users/userProfile",
   async ({ userName, token }) => {
@@ -113,6 +123,7 @@ export const unFollowUser = createAsyncThunk(
 export const userSlice = createSlice({
   name: "user",
   initialState: {
+    allUsers: [],
     currentUser: {},
     userProfile: {},
     userList: {},
@@ -121,7 +132,7 @@ export const userSlice = createSlice({
     currentUserDataStatus: "idle",
     profileUpdateStatus: "idle",
     followStatus: "idle",
-    unFollowStatus: "idle",
+    unfollowStatus: "idle",
     connectionsStatus: "idle",
     error: null
   },
@@ -136,6 +147,17 @@ export const userSlice = createSlice({
     }
   },
   extraReducers: {
+    // [fetchAllUsers.pending]: (state, action) => {
+    //   state.userProfileStatus = "loading";
+    // },
+    [fetchAllUsers.fulfilled]: (state, action) => {
+      state.allUsers = action.payload;
+      // state.userProfileStatus = "succeeded";
+    },
+    [fetchAllUsers.rejected]: (state, action) => {
+      // state.userProfileStatus = "failed";
+      state.error = action.error.message;
+    },
     [fetchCurrentUserData.pending]: (state, action) => {
       state.currentUserDataStatus = "loading";
     },

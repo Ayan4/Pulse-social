@@ -3,11 +3,11 @@ import axios from "axios";
 import { API_URL } from "../../constants";
 import { logoutButtonClicked } from "../auth/authSlice";
 
-export const fetchFeed = createAsyncThunk("posts/fetchFeed", async (token) => {
+export const fetchFeed = createAsyncThunk("posts/fetchFeed", async token => {
   const response = await axios.get(`${API_URL}/posts`, {
     headers: {
-      authorization: token,
-    },
+      authorization: token
+    }
   });
 
   return response.data.postList;
@@ -18,12 +18,25 @@ export const fetchPostsOfUser = createAsyncThunk(
   async ({ userName, token }) => {
     const response = await axios.get(`${API_URL}/posts/${userName}`, {
       headers: {
-        authorization: token,
-      },
+        authorization: token
+      }
     });
     return response.data.postList;
   }
 );
+
+export const deletePost = createAsyncThunk("posts/deletePost", async data => {
+  const response = await axios.post(
+    `${API_URL}/posts/delete/${data.postId}`,
+    {},
+    {
+      headers: {
+        authorization: data.token
+      }
+    }
+  );
+  return response.data;
+});
 
 export const addPost = createAsyncThunk(
   "posts/addPost",
@@ -33,12 +46,12 @@ export const addPost = createAsyncThunk(
         `${API_URL}/posts`,
         {
           text: data.text,
-          asset: data.asset,
+          asset: data.asset
         },
         {
           headers: {
-            authorization: data.token,
-          },
+            authorization: data.token
+          }
         }
       );
       return response.data;
@@ -48,26 +61,26 @@ export const addPost = createAsyncThunk(
   }
 );
 
-export const likePost = createAsyncThunk("posts/likePost", async (data) => {
+export const likePost = createAsyncThunk("posts/likePost", async data => {
   const response = await axios.post(
     `${API_URL}/posts/like/${data.postId}`,
     {},
     {
       headers: {
-        authorization: data.token,
-      },
+        authorization: data.token
+      }
     }
   );
   return response.data;
 });
-export const unlikePost = createAsyncThunk("posts/unlikePost", async (data) => {
+export const unlikePost = createAsyncThunk("posts/unlikePost", async data => {
   const response = await axios.post(
     `${API_URL}/posts/unlike/${data.postId}`,
     {},
     {
       headers: {
-        authorization: data.token,
-      },
+        authorization: data.token
+      }
     }
   );
   return response.data;
@@ -81,13 +94,13 @@ export const postsSlice = createSlice({
     feedStatus: "idle",
     userProfilePostsStatus: "idle",
     error: null,
-    addStatus: "idle",
+    addStatus: "idle"
   },
   reducers: {
     userPostsReset: (state, dispatch) => {
       state.userPosts = [];
       state.userProfilePostsStatus = "idle";
-    },
+    }
   },
   extraReducers: {
     [fetchFeed.pending]: (state, action) => {
@@ -123,13 +136,23 @@ export const postsSlice = createSlice({
       state.addStatus = "failed";
       state.error = action.payload.message;
     },
+
+    [deletePost.fulfilled]: (state, action) => {
+      state.feed = state.feed.filter(
+        item => item._id !== action.payload.postId
+      );
+      state.userPosts = state.userPosts.filter(
+        item => item._id !== action.payload.postId
+      );
+    },
+
     [likePost.fulfilled]: (state, action) => {
-      state.feed = state.feed.map((post) =>
+      state.feed = state.feed.map(post =>
         post._id === action.payload.postId
           ? { ...post, likes: post.likes.concat(action.payload.userId) }
           : { ...post }
       );
-      state.userPosts = state.userPosts.map((post) =>
+      state.userPosts = state.userPosts.map(post =>
         post._id === action.payload.postId
           ? { ...post, likes: post.likes.concat(action.payload.userId) }
           : { ...post }
@@ -137,23 +160,23 @@ export const postsSlice = createSlice({
     },
 
     [unlikePost.fulfilled]: (state, action) => {
-      state.feed = state.feed.map((post) =>
+      state.feed = state.feed.map(post =>
         post._id === action.payload.postId
           ? {
               ...post,
               likes: post.likes.filter(
-                (userId) => userId !== action.payload.userId
-              ),
+                userId => userId !== action.payload.userId
+              )
             }
           : { ...post }
       );
-      state.userPosts = state.userPosts.map((post) =>
+      state.userPosts = state.userPosts.map(post =>
         post._id === action.payload.postId
           ? {
               ...post,
               likes: post.likes.filter(
-                (userId) => userId !== action.payload.userId
-              ),
+                userId => userId !== action.payload.userId
+              )
             }
           : { ...post }
       );
@@ -164,8 +187,8 @@ export const postsSlice = createSlice({
       state.userProfilePostsStatus = "idle";
       state.addStatus = "idle";
       state.error = "null";
-    },
-  },
+    }
+  }
 });
 export const { userPostsReset } = postsSlice.actions;
 export default postsSlice.reducer;

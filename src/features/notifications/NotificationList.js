@@ -3,14 +3,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { TimeAgo } from "../posts/TimeAgo";
 import {
   fetchNotifications,
-  selectAllNotifications,
+  selectAllNotifications
 } from "./notificationsSlice";
+import { CgSpinnerAlt } from "react-icons/cg";
 
 export const NotificationList = () => {
-  const token = useSelector((state) => state.auth.token);
-  const notificationsStatus = useSelector(
-    (state) => state.notifications.status
-  );
+  const token = useSelector(state => state.auth.token);
+  const notificationsStatus = useSelector(state => state.notifications.status);
   const dispatch = useDispatch();
   const notifications = useSelector(selectAllNotifications);
 
@@ -18,8 +17,14 @@ export const NotificationList = () => {
     dispatch(fetchNotifications(token));
   }, [dispatch, token]);
 
+  // console.log(notifications);
+
   if (notificationsStatus === "loading") {
-    return <div className="loader center-page-align" />;
+    return (
+      <div className="flex justify-center mt-16">
+        <CgSpinnerAlt className="animate-spin text-primary text-4xl" />
+      </div>
+    );
   }
   return (
     <div className="list-align-center margin-top-5">
@@ -30,7 +35,7 @@ export const NotificationList = () => {
         Notifications
       </div>
       <div>
-        {notifications.map((notification) => {
+        {notifications.map(notification => {
           return (
             // <div>
             //   <div>

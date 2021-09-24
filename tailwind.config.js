@@ -4,7 +4,8 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#EB5A60"
+        primary: "#00A7F8",
+        secondary: "#0A1429"
       },
       screens: {
         xs: "450px"

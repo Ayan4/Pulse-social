@@ -1,4 +1,4 @@
-// import { useDispatch } from "react-redux";
+import { useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useCallback, useState } from "react";
 import axios from "axios";
@@ -6,6 +6,7 @@ import { UsersListDropDown } from "./UsersListDropDown";
 import { API_URL } from "../../constants";
 import { API_STATUS } from "../../constants";
 import { IoMdClose } from "react-icons/io";
+import { BiSearchAlt } from "react-icons/bi";
 
 const APIStatus = {
   IDLE: "idle",
@@ -18,7 +19,7 @@ export const SearchBar = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [status, setStatus] = useState(APIStatus.IDLE);
   const [searchValue, setSearchValue] = useState("");
-
+  const node = useRef(null);
   const [isDropDownOpen, setDropDownOpen] = useState(false);
   const token = useSelector(state => state.auth.token);
 
@@ -70,12 +71,22 @@ export const SearchBar = () => {
   };
   const debouncedFunction = useCallback(debounce(handleSearch, 300), []);
 
+  useEffect(() => {
+    const handleFilter = e => {
+      if (!node.current.contains(e.target)) {
+        setDropDownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleFilter);
+    return () => document.removeEventListener("mousedown", handleFilter);
+  });
+
   return (
-    <div className="relative">
+    <div ref={node} className="relative sm:w-2/5 max-w-lg w-3/5">
       <div className="flex items-center relative">
         <input
           type="text"
-          className="text-black w-50 outline-none pl-2 border border-gray-400 pr-7 rounded-lg py-1"
+          className="text-black w-full outline-none pl-3 pr-8 rounded-lg py-1.5 bg-gray-200"
           value={searchValue}
           onFocus={openDropDown}
           placeholder="Search users"
@@ -85,16 +96,24 @@ export const SearchBar = () => {
           }}
         />
 
-        {isDropDownOpen && (
+        {isDropDownOpen ? (
           <IoMdClose
-            className={"text-gray-600 cursor-pointer text-xl absolute right-1"}
+            className={
+              "text-gray-600 cursor-pointer text-xl absolute right-1 mr-1"
+            }
             onClick={closeDropDown}
+          />
+        ) : (
+          <BiSearchAlt
+            className={
+              "text-gray-600 cursor-pointer text-xl absolute right-1 mr-1"
+            }
           />
         )}
       </div>
 
       {isDropDownOpen && (
-        <div className="border border-gray-400 absolute w-full bg-white mt-2 rounded p-2">
+        <div className="border border-gray-400 shadow-lg absolute w-full bg-gray-100 mt-2 rounded">
           <UsersListDropDown
             searchResults={searchResults}
             status={status}

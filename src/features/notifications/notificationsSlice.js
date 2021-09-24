@@ -2,24 +2,27 @@ import {
   createSlice,
   createAsyncThunk,
   createEntityAdapter,
+  current
 } from "@reduxjs/toolkit";
 import axios from "axios";
 import { logoutButtonClicked } from "../auth/authSlice";
 import { API_URL } from "../../constants";
 
 const notificationsAdapter = createEntityAdapter({
-  selectId: (notification) => notification._id,
-  sortComparer: (a, b) => b.createdAt.localeCompare(a.createdAt),
+  selectId: notification => notification._id,
+  sortComparer: (a, b) => b.createdAt.localeCompare(a.createdAt)
 });
 
 export const fetchNotifications = createAsyncThunk(
   "notifications/fetchNotifications",
-  async (token) => {
+  async token => {
     const response = await axios.get(`${API_URL}/notifications`, {
       headers: {
-        authorization: token,
-      },
+        authorization: token
+      }
     });
+
+    console.log(response);
 
     return response.data.notificationList;
   }
@@ -29,7 +32,7 @@ export const notificationsSlice = createSlice({
   name: "posts",
   initialState: notificationsAdapter.getInitialState({
     status: "idle",
-    error: null,
+    error: null
   }),
   reducers: {},
   extraReducers: {
@@ -38,6 +41,7 @@ export const notificationsSlice = createSlice({
     },
     [fetchNotifications.fulfilled]: (state, action) => {
       state.status = "succeeded";
+      console.log(current(action.payload));
       notificationsAdapter.upsertMany(state, action.payload);
     },
     [fetchNotifications.rejected]: (state, action) => {
@@ -48,10 +52,11 @@ export const notificationsSlice = createSlice({
       notificationsAdapter.removeAll(state);
       state.status = "idle";
       state.error = "null";
-    },
-  },
+    }
+  }
 });
 export default notificationsSlice.reducer;
 export const { notificationsReset } = notificationsSlice.actions;
-export const { selectAll: selectAllNotifications } =
-  notificationsAdapter.getSelectors((state) => state.notifications);
+export const {
+  selectAll: selectAllNotifications
+} = notificationsAdapter.getSelectors(state => state.notifications);

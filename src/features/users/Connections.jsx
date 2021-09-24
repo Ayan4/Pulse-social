@@ -5,26 +5,27 @@ import {
   fetchConnections,
   followUser,
   unFollowUser,
-  connectionsReset,
+  connectionsReset
 } from "./userSlice";
+import { CgSpinnerAlt } from "react-icons/cg";
 
 export const Connections = () => {
   const location = useLocation();
 
   const navigate = useNavigate();
 
-  const token = useSelector((state) => state.auth.token);
-  const currentUser = useSelector((state) => state.user.currentUser);
-  const connectionsList = useSelector((state) => state.user.connections);
-  const connectionsStatus = useSelector(
-    (state) => state.user.connectionsStatus
-  );
+  const token = useSelector(state => state.auth.token);
+  const currentUser = useSelector(state => state.user.currentUser);
+  const connectionsList = useSelector(state => state.user.connections);
+  const connectionsStatus = useSelector(state => state.user.connectionsStatus);
 
   const dispatch = useDispatch();
 
-  const isUserInFollowingList = (id) => {
+  const isUserInFollowingList = id => {
     return currentUser.following?.includes(id);
   };
+
+  const page = location.pathname.split("/")[3];
 
   useEffect(() => {
     dispatch(fetchConnections({ pathname: location.pathname, token }));
@@ -33,85 +34,84 @@ export const Connections = () => {
     };
   }, [dispatch, token, location]);
 
-  const handleConnectionAction = (userId) => {
+  const handleConnectionAction = userId => {
     isUserInFollowingList(userId)
       ? dispatch(
           unFollowUser({
             profileUserId: userId,
             currentUserId: currentUser._id,
-            token,
+            token
           })
         )
       : dispatch(
           followUser({
             profileUserId: userId,
             currentUserId: currentUser._id,
-            token,
+            token
           })
         );
   };
   return (
-    <div className="list-align-center margin-top-5">
-      <div className="full-width">
+    <div className="flex flex-col items-center w-full mx-2 sm:w-2/4 my-8 mx-auto px-2">
+      <div className="w-full">
         <button
-          className="profile-btn half-width"
+          className={`rounded w-1/2 py-1.5 font-semibold ${
+            page === "followers" ? "bg-primary text-white" : "bg-gray-100"
+          }`}
           onClick={() => navigate(`/users/${currentUser.userName}/followers`)}
         >
           Followers
         </button>
         <button
-          className="profile-btn half-width"
+          className={`rounded w-1/2 py-1.5 font-semibold ${
+            page === "following" ? "bg-primary text-white" : "bg-gray-100"
+          }`}
           onClick={() => navigate(`/users/${currentUser.userName}/following`)}
         >
           Following
         </button>
       </div>
+
       {connectionsStatus === "loading" && (
-        <div className="loader center-page-align" />
+        <CgSpinnerAlt className="text-4xl mt-16 animate-spin text-primary" />
       )}
+
       {connectionsStatus === "succeeded" && (
-        <div className="margin-top">
-          {connectionsList.map((user) => {
+        <div className="mt-7 w-full">
+          {connectionsList.map(user => {
             return (
               <div
                 key={user._id}
-                className="border-all gray-border cursor-pointer"
+                className="flex border rounded shadow my-2 p-4"
               >
-                <div className="flex-horizontal margint-top padding-all">
-                  <div>
-                    <img
-                      className="round-img img-size-small img-margin"
-                      src={user.photoUrl}
-                      alt="profile-pic"
-                    />
+                <div>
+                  <div className="w-24 h-24 mr-2 rounded-full overflow-hidden">
+                    <img src={user.photoUrl} alt="profile-pic" />
                   </div>
-                  <div className="flex-horizontal space-between full-width">
-                    <div>
-                      <div className="font-bold-1">
-                        {user.firstName} {user.lastName}{" "}
-                        <span className="text-gray">@{user.userName}</span>
-                      </div>
-                      <div className="font-size-5 ">{user.bio}</div>
-                    </div>
-                    <div>
-                      {currentUser.userName !== user.userName && (
-                        <button
-                          className={
-                            isUserInFollowingList(user._id)
-                              ? "float-right profile-btn btn-primary-contained"
-                              : "float-right profile-btn btn-primary-outline"
-                          }
-                          onClick={() => {
-                            handleConnectionAction(user._id);
-                          }}
-                        >
-                          {isUserInFollowingList(user._id)
-                            ? "Following"
-                            : "Follow"}
-                        </button>
-                      )}
-                    </div>
+                </div>
+
+                <div className="flex justify-between items-start w-full">
+                  <div className="font-semibold flex text-lg flex-col ml-4">
+                    {user.firstName} {user.lastName}{" "}
+                    <span className="text-gray-600 font-normal text-base">
+                      @{user.userName}
+                    </span>
                   </div>
+
+                  {currentUser.userName !== user.userName && (
+                    <button
+                      className={
+                        isUserInFollowingList(user._id)
+                          ? "bg-primary text-white rounded font-semibold px-3 py-1"
+                          : "border-2 border-primary rounded font-semibold text-primary px-3 py-1"
+                      }
+                      onClick={() => {
+                        handleConnectionAction(user._id);
+                      }}
+                    >
+                      {isUserInFollowingList(user._id) ? "Following" : "Follow"}
+                    </button>
+                  )}
                 </div>
               </div>
             );

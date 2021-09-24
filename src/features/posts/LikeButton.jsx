@@ -45,7 +45,7 @@ export const LikeButton = ({ post }) => {
           isLiked() ? unlikePostUser() : likePostByUser();
         }}
         className={`text-2xl mr-1.5 cursor-pointer ${
-          isLiked() ? "text-red-500" : "text-gray-700"
+          isLiked() ? "text-primary" : "text-gray-700"
         }`}
       />
       <span>{post.likes.length} likes</span>
