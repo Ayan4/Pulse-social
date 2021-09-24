@@ -13,7 +13,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { Feed } from "./features/posts/Feed";
 
 function App() {
-  // const status = useSelector((state) => state.user.currentUserDataStatus);
   const token = useSelector(state => state.auth.token);
   const dispatch = useDispatch();
   useEffect(() => {
